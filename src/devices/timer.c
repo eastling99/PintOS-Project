@@ -89,10 +89,10 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-  int64_t start_tick = timer_ticks (); /* start_tick = amount of ticks since booting */
+  int64_t start = timer_ticks (); /* start = amount of ticks since timer_sleep function call */
   /* replaced the busy_wait method with sleep/wake-up method */
   ASSERT (intr_get_level () == INTR_ON);  /* true(no shutdown) if interrupt is enabled */
-  thread_sleep(start_tick + ticks); /* use the new sleep/wake-up function */
+  thread_sleep(start + ticks); /* use the new sleep/wake-up function */
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
