@@ -45,6 +45,10 @@ struct kernel_thread_frame
     void *aux;                  /* Auxiliary data for function. */
   };
 
+static struct list sleeping_threads; /* list to store sleeping threads */
+
+static int64_t following_wake_tick; /* the first thread to wake up in sleeping_threads */
+
 /* Statistics. */
 static long long idle_ticks;    /* # of timer ticks spent idle. */
 static long long kernel_ticks;  /* # of timer ticks in kernel threads. */
@@ -92,7 +96,7 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
-
+  list_init (&sleeping_threads);
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
   init_thread (initial_thread, "main", PRI_DEFAULT);
@@ -581,7 +585,73 @@ allocate_tid (void)
 
   return tid;
 }
-
+
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
+
+/*return and renew function to manage variable following_wake_tick */
+int64_t return_following_wake_tick(void)
+{ 
+ return following_wake_tick;
+} 
+
+
+void renew_following_wake_tick(int64_t ticks)
+{
+  if (following_wake_tick > ticks)
+  {
+    following_wake_tick = ticks;
+  }
+  else
+  {
+    following_wake_tick = following_wake_tick;
+  }
+}
+
+/* function to put timer to sleep using sleep/wake-up method */
+void thread_sleep(int64_t ticks)
+{
+  struct thread *now;
+  enum intr_level old_level = intr_disable(); /* disable any interrupt and save any old interrupt */
+  
+  now = thread_current();
+  ASSERT(now != idle_thread);
+
+  renew_following_wake_tick(now-> tick_wake = ticks); /* renew any tick that needs to wake up */
+
+  list_push_back(&sleeping_threads, &now->elem); /* put current thread to sleeping_threads list */
+
+  thread_block();  /* block the thread until reschedule */
+  intr_set_level(old_level);  /* allow interrupt */
+}
+
+/* function to wake up every thread that is in the sleeping_threads list when needed */
+void thread_wake(int64_t tick_wake)
+{
+  following_wake_tick = INT64_MAX;
+
+  struct list_elem *x;
+  x = list_begin(&sleeping_threads); /* points to the first thread in the sleeping_threads list */
+
+  /* loop until the end of the sleeping_threads list */
+  while(x != list_end(&sleeping_threads))
+  {
+    struct thread * a = list_entry(x, struct thread, elem);
+    
+    /* remove(wake) thread from sleeping_threads list if tick has passed*/
+    if(tick_wake >= a-> tick_wake)
+    {
+      x = list_remove(&a-> elem);
+      thread_unblock(a);
+    }
+    /*move on to the next thread in sleeping_threads list to wake up */
+    else
+    {
+      x = list_next(x);
+      renew_following_wake_tick(a-> tick_wake);
+    }
+  }
+}
+
+/* used list functions defined in kernel/list.c, study reference: "https://jeason.gitbooks.io/pintos-reference-guide-sysu/content/list.html" */
