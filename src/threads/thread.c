@@ -597,7 +597,8 @@ int64_t return_following_wake_tick(void)
 } 
 
 
-void renew_following_wake_tick(int64_t ticks)
+void
+renew_following_wake_tick(int64_t ticks)
 {
   if (following_wake_tick > ticks)
   {
@@ -610,7 +611,8 @@ void renew_following_wake_tick(int64_t ticks)
 }
 
 /* function to put timer to sleep using sleep/wake-up method */
-void thread_sleep(int64_t ticks)
+void
+thread_sleep(int64_t ticks)
 {
   struct thread *now;
   enum intr_level old_level = intr_disable(); /* disable any interrupt and save any old interrupt */
@@ -627,7 +629,8 @@ void thread_sleep(int64_t ticks)
 }
 
 /* function to wake up every thread that is in the sleeping_threads list when needed */
-void thread_wake(int64_t tick_wake)
+void
+thread_wake(int64_t tick_wake)
 {
   following_wake_tick = INT64_MAX;
 
