@@ -164,11 +164,11 @@ bool thread_compare_donator_priority (const struct list_elem *e, const struct li
 void priority_donate (void);
 void remove_donator_with_lock (struct lock *lock);
 void update_priority (void);
-void mlfqs_calc_priority (struct thread *t);
-void mlfqs_calc_recent_cpu (struct thread *t);
-void mlfqs_calc_load_avg (void);
-void mlfqs_incr_recent_cpu (void);
-void mlfqs_recalc_recent_cpu (void);
-void mlfqs_recalc_priority (void);
+void mlfqs_calculate_priority (struct thread *t);
+void mlfqs_calculate_recent_cpu (struct thread *t);
+void mlfqs_calculate_load_avg (void);
+void mlfqs_increment_recent_cpu (void);
+void mlfqs_recalculate_recent_cpu (void);
+void mlfqs_recalculate_priority (void);
 
 #endif /* threads/thread.h */

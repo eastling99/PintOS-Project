@@ -198,7 +198,6 @@ lock_init (struct lock *lock)
 void
 lock_acquire (struct lock *lock)
 {
-  // for mlfqs mode
   if (thread_mlfqs) 
   {
     sema_down (&lock->semaphore);
@@ -267,7 +266,6 @@ lock_release (struct lock *lock)
   // Empty holder.
   lock->holder = NULL;
 
-  // for mlfqs mode
   if (thread_mlfqs) 
   {
     sema_up (&lock->semaphore);
