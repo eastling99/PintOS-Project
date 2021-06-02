@@ -38,7 +38,7 @@ static struct lock file_lock;
 // System call handler.
 static void syscall_handler (struct intr_frame *);
 
-// System call functions.
+// Sytem call functions.
 static int sys_halt (void);
 static int sys_exec (const char *cmd);
 static int sys_wait (pid_t pid);

@@ -140,8 +140,8 @@ start_process (void *file_name_)
 
   success = load (file_name, &if_.eip, &if_.esp); // load exe from file name and start program.
 
-  /* My Code (start) */
   void *start_point;
+  /* My Code (start) */
   /* Store argument to stack (setup stack) */
   if (success) // If load is successful.
   {

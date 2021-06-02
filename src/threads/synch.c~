@@ -198,6 +198,8 @@ lock_init (struct lock *lock)
 void
 lock_acquire (struct lock *lock)
 {
+#ifndef USERPROG
+  // for mlfqs mode
   if (thread_mlfqs) 
   {
     sema_down (&lock->semaphore);
@@ -218,7 +220,7 @@ lock_acquire (struct lock *lock)
     list_insert_ordered (&lock->holder->donators, &curr->donator_elem, thread_compare_donator_priority, 0);
     priority_donate ();
   }
-
+#endif
   sema_down (&lock->semaphore);
 
   // The lock is acquired, thus the wait_on_lock shold be NULL
@@ -266,6 +268,7 @@ lock_release (struct lock *lock)
   // Empty holder.
   lock->holder = NULL;
 
+  // for mlfqs mode
   if (thread_mlfqs) 
   {
     sema_up (&lock->semaphore);

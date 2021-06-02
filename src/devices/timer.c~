@@ -171,7 +171,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
-
+#ifndef USERPROG
   if (thread_mlfqs) // Only when mlfqs mode
   {
     mlfqs_incr_recent_cpu ();
@@ -184,6 +184,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
         mlfqs_calc_load_avg ();
       }
     }
+#endif
   }
 
   thread_wake (ticks);

@@ -171,7 +171,6 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
-
   if (thread_mlfqs) // Only when mlfqs mode
   {
     mlfqs_incr_recent_cpu ();

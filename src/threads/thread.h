@@ -1,9 +1,9 @@
 #ifndef THREADS_THREAD_H
 #define THREADS_THREAD_H
-
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include "threads/synch.h"
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -23,6 +23,10 @@ typedef int tid_t;
 #define PRI_MIN 0                       /* Lowest priority. */
 #define PRI_DEFAULT 31                  /* Default priority. */
 #define PRI_MAX 63                      /* Highest priority. */
+
+#ifdef USERPROG
+#define RET_STATUS_DEFAULT 0xcdcdcdcd
+#endif
 
 /* A kernel thread or user process.
 
@@ -93,11 +97,6 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
-#ifdef USERPROG
-    /* Owned by userprog/process.c. */
-    uint32_t *pagedir;                  /* Page directory. */
-#endif
-
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
 
@@ -114,6 +113,17 @@ struct thread
     /* Used for advanced schedular */
     int nice;
     int recent_cpu;
+
+    /* Owned by process.c. */
+#ifdef USERPROG
+    uint32_t *pagedir;                  /* Page directory. */
+
+    int exit_status;                    // exit status.
+    struct list opened_files;           // list of opened files.
+    struct file *exe;                   // executed file. (used for denying wrties to exe)
+    struct thread *parent;              // parent process (Parent of the thread).
+    struct semaphore wait;              // semaphore wait used when process_wait creates a thread.
+#endif
   };
 
 /* If false (default), use round-robin scheduler.
@@ -170,5 +180,7 @@ void mlfqs_calc_load_avg (void);
 void mlfqs_incr_recent_cpu (void);
 void mlfqs_recalc_recent_cpu (void);
 void mlfqs_recalc_priority (void);
+
+struct thread *tid_get_thread (tid_t);
 
 #endif /* threads/thread.h */

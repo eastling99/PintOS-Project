@@ -12,6 +12,7 @@
 #include "threads/synch.h"
 #include "threads/vaddr.h"
 #include "threads/fixed_point.h"
+
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -227,6 +228,14 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
   thread_preemption_check ();
+
+// Initialization for Thread (USERPROG)
+#ifdef USERPROG
+  t->exit_status = RET_STATUS_DEFAULT; // Set exit_status to default.
+  t->parent = NULL;                    // Initialize parent process.
+  sema_init (&t->wait, 0);             // Initialize semaphore wait. (used in start_process and process_execute)
+  list_init (&t->opened_files);        // Initialize list of opened files.
+#endif
 
   return tid;
 }
@@ -883,6 +892,27 @@ mlfqs_recalc_priority (void)
     struct thread *t = list_entry (m, struct thread, allelem);
     mlfqs_calc_priority (t);
   }
+}
+
+// Get thread using tid (thread identifier type)
+struct thread *tid_get_thread (tid_t tid)
+{
+  struct thread *match; // make a local struct for thread that matchs tid
+  match = NULL; // Initialize match to NULL.
+  struct list_elem *a; // temporary list elem struct.
+
+  // Go through the list of processes all_list (beginning to the end)
+  for (a = list_begin (&all_list); a != list_end (&all_list); a = list_next (a))
+  {
+    match = list_entry (a, struct thread, allelem); // temporarily store thread from list to match
+    ASSERT (is_thread (match)); // Check if the match is valid
+    if (match->tid == tid) // If tid of the thread matches the tid argument.
+    {
+      return match; // return matched thread.
+    }
+  }
+  match = NULL; // reset found thread to NULL if no thread found.
+  return match;
 }
 
 /* used list functions defined in kernel/list.c, study reference: "https://jeason.gitbooks.io/pintos-reference-guide-sysu/content/list.html" */
